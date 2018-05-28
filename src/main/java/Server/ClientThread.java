@@ -1,9 +1,6 @@
 package Server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.sql.SQLException;
 
@@ -11,7 +8,7 @@ import java.sql.SQLException;
 // CREARECONT = 2
 // DESCARCARE = 3
 // CAUTARE = 4
-// SUGESTII = 5
+// RATING = 5
 // TOATE_CARTILE = 6
 // DELOGARE = 7
 public class ClientThread extends Thread{
@@ -34,6 +31,7 @@ public class ClientThread extends Thread{
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream())); //client -> server stream
             PrintWriter out = new PrintWriter(socket.getOutputStream()); //server -> client stream
+            Integer currentUserID=-1;
             while (true) {
                 String request = in.readLine();
                 Integer command=Integer.parseInt(request);
@@ -43,7 +41,7 @@ public class ClientThread extends Thread{
                     case(1): {
                         String username = in.readLine();
                         String hashPassword = in.readLine();
-                        logare(out,username,hashPassword);
+                        currentUserID=logare(out,username,hashPassword);
                         break;
                     }
                     case(2):
@@ -54,13 +52,30 @@ public class ClientThread extends Thread{
                         break;
                     }
                     case(3):{
-
+                        descarcare(in,out);
+                        break;
+                    }
+                    case(4):{
+                        String type=in.readLine();
+                        String pattern=in.readLine();
+                        searchFor(type,request,out);
+                        break;
+                    }
+                    case(5):{
+                        Integer rating=Integer.parseInt(in.readLine());
+                        Integer isbn=Integer.parseInt(in.readLine());
+                        submitRating(rating,isbn);
+                        break;
+                    }
+                    case(6):{
+                        afisare_carti(out);
+                        break;
                     }
                 }
             }
             in.close();
             out.close();
-            socket.close(); //... usse try-catch-finally to handle the exceptions!
+            socket.close();
         } catch (java.io.IOException e) {
             e.printStackTrace();
             return;
@@ -79,12 +94,56 @@ public class ClientThread extends Thread{
             e.printStackTrace();
         }
     }
-    public void logare(PrintWriter out,String username,String password){
+    public Integer logare(PrintWriter out,String username,String password){
             UsersController usersController = new UsersController();
             if (!usersController.checkIfUsernameExists(username)) {
                 out.println(0);
-                return;
+                return -1;
             }
             out.println(1);
+            return usersController.getIdByUsername(username);
     }
+    public void afisare_carti(PrintWriter out){
+        BooksController booksController=new BooksController();
+        booksController.list(out);
+    }
+    public void descarcare(BufferedReader in,PrintWriter out)
+    {
+        try {
+            String genre = in.readLine();
+            String authorName=in.readLine();
+            String title=in.readLine();
+            Integer year=Integer.parseInt(in.readLine());
+            Integer isbn=Integer.parseInt(in.readLine());
+            Integer rating=Integer.parseInt(in.readLine());
+            BooksController booksController=new BooksController();
+            Integer id=booksController.getID(genre,authorName,title,year,isbn,rating);
+            if(id==null)
+                out.println(0);
+            else
+                out.println(1);
+            File file = new File("D:\\JavaProject\\reads-profiler-server\\src\\Books\\"+id.toString()+".txt");
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String st;
+            while ((st = br.readLine()) != null)
+                out.println(st);
+            out.println("-1");
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
+    }
+    public void submitRating(Integer rating,Integer isbn)
+    {
+        BooksController booksController=new BooksController();
+        booksController.addRating(rating,isbn);
+    }
+    public void searchFor(String type,String pattern,PrintWriter out)
+    {
+        BooksController booksController=new BooksController();
+        booksController.filter(type,pattern,out);
+    }
+
 }

@@ -19,7 +19,7 @@ public class UsersController {
         Connection con = Database.getConnection();
         try {
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select count(*) from users where username=" + username);
+            ResultSet rs = stmt.executeQuery("select count(*) from users where username=''" + username+"''");
             rs.next();
             if (rs.getInt(1) != 0)
                 return true;
@@ -30,6 +30,21 @@ public class UsersController {
             e.printStackTrace();
             Database.rollback();
             return true;
+        }
+    }
+    public Integer getIdByUsername(String username){
+        Connection con = Database.getConnection();
+        try {
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("select id from users where username=''" + username+"''");
+            rs.next();
+            return rs.getInt(1);
+
+        } catch (SQLException e) {
+            System.err.println(e);
+            e.printStackTrace();
+            Database.rollback();
+            return null;
         }
     }
 
