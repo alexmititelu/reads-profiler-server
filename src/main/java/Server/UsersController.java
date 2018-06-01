@@ -10,6 +10,7 @@ public class UsersController {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
             pstmt.executeUpdate();
+            con.commit();
         } catch (SQLException e) {
             System.err.println(e);
             Database.rollback();
@@ -19,11 +20,10 @@ public class UsersController {
         Connection con = Database.getConnection();
         try {
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select count(*) from users where username=''" + username+"''");
+            ResultSet rs = stmt.executeQuery("select count(*) from java.users where username='" + username+"'");
             rs.next();
-            if (rs.getInt(1) != 0)
-                return true;
-
+            if (rs.getInt(1) != 0){
+                return true;}
             return false;
         } catch (SQLException e) {
             System.err.println(e);
@@ -36,7 +36,7 @@ public class UsersController {
         Connection con = Database.getConnection();
         try {
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select id from users where username=''" + username+"''");
+            ResultSet rs = stmt.executeQuery("select id from users where username='" + username+"'");
             rs.next();
             return rs.getInt(1);
 

@@ -23,7 +23,7 @@ public class Database {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(URL, props);
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(true);
         } catch (SQLException e) {
             e.printStackTrace();
         }

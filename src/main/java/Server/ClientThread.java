@@ -62,8 +62,8 @@ public class ClientThread extends Thread{
                         break;
                     }
                     case(5):{
-                        Integer rating=Integer.parseInt(in.readLine());
                         Integer isbn=Integer.parseInt(in.readLine());
+                        Integer rating=Integer.parseInt(in.readLine());
                         submitRating(rating,isbn);
                         break;
                     }
@@ -86,10 +86,13 @@ public class ClientThread extends Thread{
             UsersController usersController = new UsersController();
             if (usersController.checkIfUsernameExists(username) == true) {
                 out.println(0);
+                out.flush();
                 return;
             }
             usersController.create(username, password);
             out.println(1);
+            out.flush();
+
         }catch (SQLException e) {
             e.printStackTrace();
         }
@@ -98,9 +101,11 @@ public class ClientThread extends Thread{
             UsersController usersController = new UsersController();
             if (!usersController.checkIfUsernameExists(username)) {
                 out.println(0);
+                out.flush();
                 return -1;
             }
             out.println(1);
+            out.flush();
             return usersController.getIdByUsername(username);
     }
     public void afisare_carti(PrintWriter out){
@@ -110,24 +115,18 @@ public class ClientThread extends Thread{
     public void descarcare(BufferedReader in,PrintWriter out)
     {
         try {
-            String genre = in.readLine();
-            String authorName=in.readLine();
-            String title=in.readLine();
-            Integer year=Integer.parseInt(in.readLine());
             Integer isbn=Integer.parseInt(in.readLine());
-            Integer rating=Integer.parseInt(in.readLine());
             BooksController booksController=new BooksController();
-            Integer id=booksController.getID(genre,authorName,title,year,isbn,rating);
-            if(id==null)
-                out.println(0);
-            else
-                out.println(1);
+            Integer id=booksController.getID(isbn);
+
             File file = new File("D:\\JavaProject\\reads-profiler-server\\src\\Books\\"+id.toString()+".txt");
             BufferedReader br = new BufferedReader(new FileReader(file));
             String st;
             while ((st = br.readLine()) != null)
-                out.println(st);
+            {    out.println(st); out.flush();}
+
             out.println("-1");
+            out.flush();
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {
